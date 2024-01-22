@@ -1,0 +1,30 @@
+name: Publish Jobber Shared library
+on:
+  push:
+    branches: [main]
+    paths:
+      - "microservices/jobber-shared/**"
+      - ".github/workflows/publish.yml"
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: ./microservices/jobber-shared
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+      - run: npm install
+      - run: npm run build
+      - run: |
+          echo @cristofima:https://npm.pkg.github.com/ > build/.npmrc
+          echo '//npm.pkg.github.com/:_authToken=${NPM_TOKEN}' >> build/.npmrc
+      - run: npm publish
+        working-directory: ./microservices/jobber-shared/build
+        env:
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
